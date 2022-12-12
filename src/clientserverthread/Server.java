@@ -1,4 +1,4 @@
-package src.clientserverthread;
+package clientserverthread;
 
 public class Server {
     //open socket
