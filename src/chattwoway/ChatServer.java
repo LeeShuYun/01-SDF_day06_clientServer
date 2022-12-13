@@ -1,4 +1,4 @@
-package day06;
+package chattwoway;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -14,13 +14,15 @@ import java.util.List;
 import java.util.Random;
 import java.util.stream.Collectors;
 
+import day06.IOUtils;
+
 //this is TCP
 //java -cp classes day06.ListServer <port>
 
-public class ListServer {
+public class ChatServer {
     public static void main(String[] args) throws Exception{
 
-        //get port 
+        //get port number
         Integer port = Integer.parseInt(args[0]);
         
         //start server socket

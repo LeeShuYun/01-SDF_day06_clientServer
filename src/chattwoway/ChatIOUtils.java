@@ -1,4 +1,4 @@
-package day06;
+package chattwoway;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -10,7 +10,19 @@ import java.io.OutputStream;
 import java.net.Socket;
 
 
-public class IOUtils {
+
+public class ChatIOUtils implements Runnable{
+    public ChatIOUtils(InputStream is){
+    }
+    @Override
+    public void run(){
+        try{
+            BufferedInputStream bis = new BufferedInputStream(is);
+            DataInputStream dis = new DataInputStream(bis);
+        }
+    }
+    public static void 
+
     public static void write(Socket socket, String payload) throws IOException {
         //get output stream
         //
