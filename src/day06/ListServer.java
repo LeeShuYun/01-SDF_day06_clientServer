@@ -42,6 +42,7 @@ public class ListServer {
             Integer noOfNum = Integer.parseInt(values[0]);
             Integer numLimit = Integer.parseInt(values[1]);
 
+            //creating the numbers the client wants 
             Random rand = new SecureRandom();
             List<Integer> randNums = new LinkedList<>();
             for (Integer i = 0; i < noOfNum; i++) {
