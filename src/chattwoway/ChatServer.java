@@ -12,12 +12,15 @@ import java.security.SecureRandom;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
 import day06.IOUtils;
 
 //this is TCP
 //java -cp classes day06.ListServer <port>
+//this is a threaded server
 
 public class ChatServer {
     public static void main(String[] args) throws Exception{
@@ -28,39 +31,45 @@ public class ChatServer {
         //start server socket
         ServerSocket server = new ServerSocket(port);
         System.out.printf("Listening on port %d\n", port);
+
+        //executor service to juggle threads. the number of threads there will be is in the ()
+        ExecutorService thrpool = Executors.newFixedThreadPool(2);
+
+        // create the Runnable job for the thread to run
+        Runnable run = () -> {
+            
+            try{
+                //generate a random port between 1025 and 655535 nd check if it's available
+                Random rnd = new SecureRandom();
+                Integer rndPort = rnd.nextInt(64510) + 1025;
+
+                //check if the port is occupied, if it isn't then we can use it
+                Socket sockt = new Socket("localhost", rndPort);
+                
+            } catch (ConnectException e) {
+                
+            } catch (IOException e) {
+                throw new IllegalStateException("Error while trying to check open port", e);
+            }
+            
+
+        };
+
         
-        //server listening loop
+        //server listening loop on Main Thread
         while (true){
             //wait for a connection
             System.out.println("Waiting for connections....");
             Socket socket = server.accept();
-            System.out.printf("New connection on port %d\n", socket.getLocalPort());
-
-             // open output
-            String payload = IOUtils.read(socket);
-
-            // parsing the received data
-            String[] values = payload.split(" ");
-            Integer noOfNum = Integer.parseInt(values[0]);
-            Integer numLimit = Integer.parseInt(values[1]);
-
-            Random rand = new SecureRandom();
-            List<Integer> randNums = new LinkedList<>();
-            for (Integer i = 0; i < noOfNum; i++) {
-                randNums.add(rand.nextInt(numLimit));
-            }
-
-            //we read the response
-            String response = randNums.stream()
-            .map(v -> v.toString())
-            .collect(Collectors.joining(":"));
-
-            IOUtils.write(socket, response);
             
-            socket.close();
-
-
+            //create the Clienthandler class we made
+            ClientHandler client = new ClientHandler(socket);
+            //to make a thread we need to pass this Runnable client to the threadpool
+            thrpool.submit(client);
+            
+            
         }
+        socket.close();
         
         //on linux we can type 
         //netstat -tulpn
@@ -95,10 +104,47 @@ public class ChatServer {
         socket.close();*/
     
         //connect to client
+        int attempts = 0;
+        boolean scanning = true;
+        while (scanning) {
+            if (!available(8080)) {
+                attempts++;
+                if (attempts == 10) {
+                    System.out.println("giving up!");
+                    scanning = false;
+                }
+            } else {
+                scanning = false;
+            }
+            try {
+                Thread.sleep(2000);// 2 seconds
+            } catch (InterruptedException ie) {
+                ie.printStackTrace();
+            }
+        }
 
-    //receives a number from client of 100^(n)
-    //randomly generates a list of n numbers
-    //sends back to client as a comma separated list of strings
-    //client will calc avg of numbers and print out on their side
 }
+
+    private static boolean available(int port) {
+        System.out.println("--------------Testing port " + port);
+        Socket s = null;
+        try {
+            s = new Socket("localhost", port);
+            // If the code makes it this far without an exception it means
+            // something is using the port and has responded.
+            System.out.println("--------------Port " + port + " is not available");
+            return false;
+        } catch (IOException e) {
+            System.out.println("--------------Port " + port + " is available");
+            return true;
+        } finally {
+            if (s != null) {
+                try {
+                    s.close();
+                } catch (IOException e) {
+                    throw new RuntimeException("You should handle this error.", e);
+                }
+            }
+        }
+    }
 }
